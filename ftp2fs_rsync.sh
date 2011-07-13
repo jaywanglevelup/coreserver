@@ -92,11 +92,13 @@ fi
 if [ ! -e $check_switch ]; then
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
         'No check_switch file, the first time for rsync!!' | tee -a $rsync_logs
+    printf "========================================\n" | tee -a $rsync_logs
     do_rsync
     exit 0
 fi
 
 if [ $rsync_switch -nt $check_switch ]; then
+    printf "========================================\n" | tee -a $rsync_logs
     do_rsync
     exit 0
 else

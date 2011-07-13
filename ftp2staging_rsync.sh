@@ -33,7 +33,7 @@ rsync_logs=/root/staging_rsync_logfile
 
 
 function error_ftp {
-error_file=$(date +%Y-%m-%d-%T)-error
+error_file=$(date +%Y-%m-%d-%T)-rsync-error
 echo "$1" > /tmp/$error_file
 lftp -u shftp,shperfectworld 172.29.31.4 <<EOF
 cd Staging
@@ -44,7 +44,7 @@ EOF
 }
 
 function notify_ftp {
-notify_file=$(date +%Y-%m-%d-%T)-done
+notify_file=$(date +%Y-%m-%d-%T)-rsync-done
 touch /tmp/$notify_file
 lftp -u shftp,shperfectworld 172.29.31.4 <<EOF
 cd Staging
@@ -119,13 +119,14 @@ function do_rsync {
                 
             done
 
-            mv -v $ROOT_DIR/$app/* $rsynced_dir/
+            appname=$(ls $ROOT_DIR/$app/)
+            mv -v $ROOT_DIR/$app/* $rsynced_dir/$(date +%Y-%m-%d-%T)$appname
 
         else
             printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
                 'Error: More than 1 file update, rsync failed!!' \
                 | tee -a $rsync_logs
-            error_ftp "$app more than 1 file update"
+            error_ftp "Rsync error: $app more than 1 file update"
             exit 1
         fi
 
@@ -153,12 +154,16 @@ fi
 if [ ! -e $check_switch ]; then
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
         'No check_switch file, the first time for rsync!!' | tee -a $rsync_logs
+    printf "========================================\n" | tee -a $rsync_logs
     do_rsync
+    notify_ftp
     exit 0
 fi
 
 if [ $rsync_switch -nt $check_switch ]; then
+    printf "========================================\n" | tee -a $rsync_logs
     do_rsync
+    notify_ftp
     exit 0
 else
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
