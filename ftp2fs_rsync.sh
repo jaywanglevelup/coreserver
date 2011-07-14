@@ -67,12 +67,17 @@ function do_rsync {
     rsync -avc --progress $rsync_switch rsyncuser@172.29.31.18::core-game \
         --password-file $rsync_passwd | tee -a $rsync_logs
 
-    printf "%s %s \n" 'update check_switch file' | tee -a $rsync_logs
+    printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" 'update check_switch file' \
+        | tee -a $rsync_logs
     rsync -av $rsync_switch $check_switch
 
-    mv -v $ROOT_DIR/Games/* $rsynced_dir/
-    mkdir -v  $ROOT_DIR/Games/{BOI,ESO,FW,HOTK,JD,LOMA,PWI,RH,updates}
-    chown -v shftp:shftp -R $ROOT_DIR/Games/
+    printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" "Backup files to $rsynced_dir" \
+        | tee -a $rsync_logs
+    rsync -av $ROOT_DIR/Games/ $rsynced_dir | tee -a $rsync_logs
+    rm -rf -v $ROOT_DIR/Games/*  | tee -a $rsync_logs
+    mkdir -v $ROOT_DIR/Games/{BOI,ESO,FW,HOTK,JD,LOMA,PWI,RH,updates} \
+        | tee -a $rsync_logs
+    chown -v shftp:shftp -R $ROOT_DIR/Games/ | tee -a $rsync_logs
 }
 
 if [ ! -e $rsync_switch ]; then

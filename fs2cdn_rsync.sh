@@ -54,6 +54,14 @@ function do_rsync {
     exit 1
 fi
 
+    if [ -s $ROOT_DIR/Games/updates/coreversion.xml ]; then
+        printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" 'Deleting coreversion.xml.!' \
+            | tee -a $rsync_logs
+        ssh -i $cdn_key_file sshacs@perfectworld.upload.akamai.com \
+            rm 68820/cc/updates/coreversion.xml
+    fi
+
+
     for game in $( ls -1 $ROOT_DIR/Games/ ); do
         printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" "Test CDN folder $game" \
             | tee -a $rsync_logs
@@ -85,7 +93,9 @@ fi
                 | tee -a $rsync_logs
         done
 
-        mv -v $ROOT_DIR/Games/$game/* $rsynced_dir/$game/ | tee -a $rsync_logs
+        #mv -v $ROOT_DIR/Games/$game/* $rsynced_dir/$game/ | tee -a $rsync_logs
+        rsync -av $ROOT_DIR/Games/$game $rsynced_dir/ | tee -a $rsync_logs
+        rm -fv $ROOT_DIR/Games/$game/* | tee -a $rsync_logs
 
     done
 
