@@ -146,7 +146,7 @@ else
         'Info: Backup old binary!' | tee -a $update_logs
     cp -v $bin_dir[0]/$serv $binbackup_dir/$serv$(date +%Y-%m-%d-%T) \
         | tee -a $update_logs
-    chmod -v a+x $serv | tee -a $update_logs | tee -a $update_logs
+    chmod -v a+x $serv | tee -a $update_logs
 
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
         'Info: Kill old process!' | tee -a $update_logs

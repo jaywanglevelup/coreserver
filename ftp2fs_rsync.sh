@@ -73,11 +73,10 @@ function do_rsync {
 
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" "Backup files to $rsynced_dir" \
         | tee -a $rsync_logs
-    rsync -av $ROOT_DIR/Games/ $rsynced_dir | tee -a $rsync_logs
-    rm -rf -v $ROOT_DIR/Games/*  | tee -a $rsync_logs
-    mkdir -v $ROOT_DIR/Games/{BOI,ESO,FW,HOTK,JD,LOMA,PWI,RH,updates} \
-        | tee -a $rsync_logs
-    chown -v shftp:shftp -R $ROOT_DIR/Games/ | tee -a $rsync_logs
+    for game in $(ls -1 $ROOT_DIR/Games/); do
+        mkdir -v $rsynced_dir/$game | tee -a $rsync_logs
+        mv -v $ROOT_DIR/Games/$game/* $rsynced_dir/$game/ | tee -a $rsync_logs
+    done
 }
 
 if [ ! -e $rsync_switch ]; then
