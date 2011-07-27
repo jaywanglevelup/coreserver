@@ -43,6 +43,17 @@ EOF
 rm /tmp/$error_file
 }
 
+function notify_ftp {
+    notify_file=$(date +%Y-%m-%d-%T)-done
+    touch /tmp/$notify_file
+lftp -u shftp,shperfectworld 172.29.31.4 <<EOF
+cd COREClient
+lcd /tmp
+put $notify_file
+exit
+EOF
+}
+
 function do_rsync {
     if [ ! -s $cdn_key_file ]; then
         printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
@@ -73,12 +84,12 @@ function do_rsync {
     exit 1
     fi
 
-    if [ -s $ROOT_DIR/Games/updates/coreversion.xml ]; then
-        printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" 'Deleting coreversion.xml!' \
-            | tee -a $rsync_logs
-        ssh -i $cdn_key_file sshacs@perfectworld.upload.akamai.com \
-            rm 68820/cc/updates/coreversion.xml | tee -a $rsync_logs
-    fi
+    #if [ -s $ROOT_DIR/Games/updates/coreversion.xml ]; then
+    #    printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" 'Deleting coreversion.xml!' \
+    #        | tee -a $rsync_logs
+    #    ssh -i $cdn_key_file sshacs@perfectworld.upload.akamai.com \
+    #        rm 68820/cc/updates/coreversion.xml | tee -a $rsync_logs
+    #fi
 
 
     for game in $( ls -1 $ROOT_DIR/Games/ ); do
@@ -132,6 +143,10 @@ function do_rsync {
                 md5sum 68820/cc/$game/$game_file) | tee -a $rsync_logs
         done
 
+        printf "%s %s %s\n" "$(date +%Y-%m-%d\ %T)" "List files in $game dir:" \
+            $(ssh -i $cdn_key_file sshacs@perfectworld.upload.akamai.com \
+            ls 68820/cc/$game) | tee -a $rsync_logs
+
         printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" "Backup file to $rsynced_dir" \
             | tee -a $rsync_logs
         #mv -v $ROOT_DIR/Games/$game/* $rsynced_dir/$game/ | tee -a $rsync_logs
@@ -145,16 +160,6 @@ function do_rsync {
     rsync -av $rsync_switch $check_switch
 }
 
-function notify_ftp {
-    notify_file=$(date +%Y-%m-%d-%T)-done
-    touch /tmp/$notify_file
-lftp -u shftp,shperfectworld 172.29.31.4 <<EOF
-cd COREClient
-lcd /tmp
-put -a $notify_file
-exit
-EOF
-}
 
 echo $$ > $fs2cdn_pid
 if [ ! -e $rsync_switch ]; then
