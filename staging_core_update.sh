@@ -17,27 +17,11 @@
 #      REVISION:  ---
 #===============================================================================
 
-#function serv2update {
-#    case $1 in
-#        corecenter ) echo "update $1"
-#            check_binary $todo
-#            ;;
-#        loginmgr ) echo "update $1"
-#            ;;
-#        front ) echo "update $1"
-#            ;;
-#        session ) echo "update $1"
-#            ;;
-#        imcenter ) echo "update $1"
-#            ;;
-#    esac
-#}
-#
 
 function error_ftp {
 error_file=$(date +%Y-%m-%d-%T)-$2-error
 echo "$1" > /tmp/$error_file
-lftp -u shftp,shperfectworld 172.29.31.4 <<EOF
+lftp -u aaa,bbb 172.29.31.4 <<EOF
 cd Staging
 lcd /tmp
 put -a $error_file
@@ -48,7 +32,7 @@ EOF
 function notify_ftp {
 notify_file=$(date +%Y-%m-%d-%T)-$1-done
 touch /tmp/$notify_file
-lftp -u shftp,shperfectworld 172.29.31.4 <<EOF
+lftp -u aaa,bbb 172.29.31.4 <<EOF
 cd Staging
 lcd /tmp
 put -a $notify_file
@@ -56,15 +40,7 @@ exit
 EOF
 }
 
-# update serv: corecenter loginmgr session front imcenter
 serv='corecenter'
-#if [ $serv = 'front' ]; then
-#    bin_dir=/usr/local/bin/$serv
-#elif [ $serv = 'session' ]; then
-#    bin_dir=$(for i in $(seq 8); do echo -n session"$i " ; done)
-#else
-#    bin_dir=/usr/local/bin
-#fi
 
 bin_dir=/usr/local/bin
 source_dir=/home/rsyncuser/$serv/$serv
@@ -135,14 +111,11 @@ else
         'Info: Backup old binary!' | tee -a $update_logs
     cp -v $bin_dir/$serv $binbackup_dir/$serv$(date +%Y-%m-%d-%T) \
         | tee -a $update_logs
-    chmod -v a+x $serv | tee -a $update_logs 
+    chmod -v a+x $serv | tee -a $update_logs
 
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
         'Info: Kill old process!' | tee -a $update_logs
     
-    #if ! $(pgrep supervisord); then
-    #    printf "%s \n" 'Error: Start Supervisord daemon failed'
-    #fi
    if pid=$(pgrep -f $bin_dir/$serv); then
         printf "%s %s %s\n" "$(date +%Y-%m-%d\ %T)" \
             "$serv is running!! pid is: " "$pid" | tee -a $update_logs
@@ -160,7 +133,7 @@ else
         printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
             "$serv is not running!! " | tee -a $update_logs
     fi
-
+ 
     sleep 2
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
         "Info: Replace $serv binary!" | tee -a $update_logs
@@ -168,8 +141,8 @@ else
 
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
         'Info: Start new process!' | tee -a $update_logs
+    cd /usr/local/var/log
     $bin_dir/$serv 1> /dev/null 2>&1 &
-
     printf "%s %s %s \n" "$(date +%Y-%m-%d\ %T)" \
         'Info: New process id is:' $(pgrep -f $bin_dir/$serv) \
     | tee -a $update_logs
@@ -181,3 +154,4 @@ else
     notify_ftp $serv
     exit 0
 fi
+

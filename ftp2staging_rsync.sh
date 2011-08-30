@@ -32,27 +32,6 @@ rsync_passwd=/root/rsync_passwd
 rsync_logs=/root/staging_rsync_logfile
 
 
-function error_ftp {
-error_file=$(date +%Y-%m-%d-%T)-rsync-error
-echo "$1" > /tmp/$error_file
-lftp -u shftp,shperfectworld 172.29.31.4 <<EOF
-cd Staging
-lcd /tmp
-put -a $error_file
-exit
-EOF
-}
-
-function notify_ftp {
-notify_file=$(date +%Y-%m-%d-%T)-rsync-done
-touch /tmp/$notify_file
-lftp -u shftp,shperfectworld 172.29.31.4 <<EOF
-cd Staging
-lcd /tmp
-put -a $notify_file
-exit
-EOF
-}
 
 function do_rsync {
     if [ ! -s $rsync_passwd ]; then
@@ -61,7 +40,7 @@ function do_rsync {
         exit 1
     fi
 
-    for app in corecenter front imcenter loginmgr session; do
+    for app in corecenter front imcenter loginmgr session all; do
         if [ ! -d $ROOT_DIR/$app ]; then
             printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
                 'Error: Missing source dir, rsync failed!!!' | tee -a $rsync_logs
@@ -77,25 +56,28 @@ function do_rsync {
 
             case $app in
                 corecenter )
-                    rsync_addresses=('172.29.31.18')
+                    rsync_addresses=('172.29.30.18' '172.29.30.4')
                     ;;
                 front )
-                    rsync_addresses=('172.29.31.20')
+                    rsync_addresses=('172.29.30.20' '172.29.30.4')
                     ;;
                 imcenter )
-                    rsync_addresses=('172.29.31.21')
+                    rsync_addresses=('172.29.30.21' '172.29.30.4')
                     ;;
                 loginmgr )
-                    rsync_addresses=('172.29.31.19')
-                    #rsync_addresses=('172.29.31.19' '172.29.31.16')
+                    rsync_addresses=('172.29.30.19' '172.29.30.4')
                     ;;
                 session )
-                    rsync_addresses=('172.29.31.20')
+                    rsync_addresses=('172.29.30.16' '172.29.30.4')
+                    ;;
+                all )
+                    rsync_addresses=('172.29.30.18' '172.29.30.19' '172.29.30.21' '172.29.30.20' '172.29.30.16' '172.29.30.4')
                     ;;
             esac
 
             for host_address in "${rsync_addresses[@]}"; do
-                if ! rsync -n rsyncuser@$host_address::$app \
+echo $host_address
+                if ! rsync -n --timeout=3 rsyncuser@$host_address::$app \
                     --password-file $rsync_passwd ; then
                     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
                         "Error: Rsync $app $host_address test failed!!"\
@@ -118,9 +100,8 @@ function do_rsync {
                     | tee -a $rsync_logs
                 
             done
-
             appname=$(ls $ROOT_DIR/$app/)
-            mv -v $ROOT_DIR/$app/* $rsynced_dir/$(date +%Y-%m-%d-%T)$appname
+            mv -v $ROOT_DIR/$app/$appname $rsynced_dir/$(date +%Y-%m-%d-%T)$appname
 
         else
             printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
@@ -136,6 +117,27 @@ function do_rsync {
     rsync -av $rsync_switch $check_switch
 }
 
+function notify_ftp {
+notify_file=$(date +%Y-%m-%d-%T)-rsync-done
+touch /tmp/$notify_file
+lftp -u aaa,bbb 172.29.31.4 <<EOF
+cd Staging
+lcd /tmp
+put -a $notify_file
+exit
+EOF
+}
+
+function error_ftp {
+error_file=$(date +%Y-%m-%d-%T)-rsync-error
+echo "$1" > /tmp/$error_file
+lftp -u aaa,bbb 172.29.31.4 <<EOF
+cd Staging
+lcd /tmp
+put -a $error_file
+exit
+EOF
+}
 
 if [ ! -e $rsync_switch ]; then
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
@@ -156,17 +158,18 @@ if [ ! -e $check_switch ]; then
         'No check_switch file, the first time for rsync!!' | tee -a $rsync_logs
     printf "========================================\n" | tee -a $rsync_logs
     do_rsync
-    notify_ftp
+    notify_ftp 
     exit 0
 fi
 
 if [ $rsync_switch -nt $check_switch ]; then
     printf "========================================\n" | tee -a $rsync_logs
     do_rsync
-    notify_ftp
+    notify_ftp 
     exit 0
 else
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
-        'Info: Nothing need to update' | tee -a $rsync_logs
+        'Info: Nothing need to update' 
+        #'Info: Nothing need to update' | tee -a $rsync_logs
     exit 0
 fi

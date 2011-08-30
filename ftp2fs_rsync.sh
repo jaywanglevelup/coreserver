@@ -47,8 +47,7 @@ function do_rsync {
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" 'Updating....!!!'\
         | tee -a $rsync_logs
 
-    if ! rsync -n rsyncuser@172.29.31.18::core-game \ 
-        --password-file $rsync_passwd ; then
+    if ! rsync -n rsyncuser@172.29.30.18::core-game --password-file $rsync_passwd ; then
         printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" 'Error: Rsync test failed!!'\
             | tee -a $rsync_logs
         exit 1
@@ -57,14 +56,14 @@ function do_rsync {
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" "Rsync $ROOT_DIR/Games start!!" \
         | tee -a $rsync_logs
 
-    rsync -avc --progress $ROOT_DIR/Games rsyncuser@172.29.31.18::core-game \
+    rsync -avc $ROOT_DIR/Games rsyncuser@172.29.30.18::core-game \
         --password-file $rsync_passwd | tee -a $rsync_logs
     
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
         "Rsync $ROOT_DIR/Games Done!!" \
         | tee -a $rsync_logs
     
-    rsync -avc --progress $rsync_switch rsyncuser@172.29.31.18::core-game \
+    rsync -avc $rsync_switch rsyncuser@172.29.30.18::core-game \
         --password-file $rsync_passwd | tee -a $rsync_logs
 
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" 'update check_switch file' \
@@ -73,6 +72,7 @@ function do_rsync {
 
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" "Backup files to $rsynced_dir" \
         | tee -a $rsync_logs
+
     for game in $(ls -1 $ROOT_DIR/Games/); do
         mkdir -v $rsynced_dir/$game | tee -a $rsync_logs
         mv -v $ROOT_DIR/Games/$game/* $rsynced_dir/$game/ | tee -a $rsync_logs
@@ -92,10 +92,9 @@ if [ ! -d $rsynced_dir ]; then
     chown -v shftp:shftp -R $rsynced_dir
 fi
 
-
 if [ ! -e $check_switch ]; then
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
-        'No check_switch file, the first time for rsync!!' | tee -a $rsync_logs
+    'No check_switch file, the first time for rsync!!' | tee -a $rsync_logs
     printf "========================================\n" | tee -a $rsync_logs
     do_rsync
     exit 0
@@ -107,6 +106,8 @@ if [ $rsync_switch -nt $check_switch ]; then
     exit 0
 else
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
-        'Info: Nothing need to update' | tee -a $rsync_logs
+    'Info: Nothing need to update' 
+    #'Info: Nothing need to update' | tee -a $rsync_logs
     exit 0
 fi
+
