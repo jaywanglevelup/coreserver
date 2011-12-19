@@ -1,8 +1,8 @@
 #!/bin/bash
-daemon_cmd='/usr/local/bin/corecenter'
-function start_corecenter {
+daemon_cmd='/usr/local/bin/loginmgr'
+function start_loginmgr {
     if pgrep -f "$daemon_cmd"; then
-        printf "Error: corecenter is running!!try restart it!\n"
+        printf "Error: loginmgr is running!!try restart it!\n"
         exit 1
     fi
 
@@ -16,7 +16,7 @@ function start_corecenter {
             printf "new pid: $(pgrep -f "$daemon_cmd")\n"
             exit 0
         else
-            printf "Error: corecenter failed to start\n"
+            printf "Error: loginmgr failed to start\n"
             exit 2
         fi
     else
@@ -34,7 +34,7 @@ function start_corecenter {
                 printf "new pid: $(pgrep -f "$daemon_cmd")\n"
                 exit 0
             else
-                printf "Error: corecenter failed to start\n"
+                printf "Error: loginmgr failed to start\n"
                 exit 2
             fi
         fi
@@ -45,7 +45,7 @@ lockfile=/var/run/$0.pid
 if [ ! -e $lockfile ]; then
     trap "rm -f $lockfile; exit" INT TERM EXIT
     touch $lockfile
-    start_corecenter
+    start_loginmgr
     rm $lockfile
     trap - INT TERM EXIT
 else

@@ -1,8 +1,8 @@
 #!/bin/bash
-daemon_cmd='/usr/local/bin/corecenter'
-function stop_corecenter {
+daemon_cmd='/usr/local/bin/loginmgr'
+function stop_loginmgr {
     if ! pgrep -f "$daemon_cmd"; then
-        printf "Error: corecenter is not running!!\n"
+        printf "Error: loginmgr is not running!!\n"
         exit 1
     fi
     
@@ -18,7 +18,7 @@ function stop_corecenter {
         pkill -f "$daemon_cmd"
         sleep 5
         if pgrep -f "$daemon_cmd"; then
-            printf "Error: failed to kill corecenter\n"
+            printf "Error: failed to kill loginmgr\n"
             exit 2
         else
             exit 0
@@ -29,7 +29,7 @@ function stop_corecenter {
         pkill -f "$daemon_cmd"
         sleep 5
         if pgrep -f "$daemon_cmd"; then
-            printf "Error: failed to kill corecenter\n"
+            printf "Error: failed to kill loginmgr\n"
             exit 2
         else
             exit 0
@@ -41,7 +41,7 @@ lockfile=/var/run/$0.pid
 if [ ! -e $lockfile ]; then
     trap "rm -f $lockfile; exit" INT TERM EXIT
     touch $lockfile
-    stop_corecenter
+    stop_loginmgr
     rm $lockfile
     trap - INT TERM EXIT
 else
