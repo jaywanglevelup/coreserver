@@ -170,7 +170,7 @@ else
                 "$serv is not running!! " | tee -a $update_logs
         fi
     fi
-    sleep 2
+    sleep 5
     printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
         "Info: Replace $serv binary!" | tee -a $update_logs
     cp -v -p $serv $bin_dir/ | tee -a $update_logs

@@ -9,7 +9,7 @@ function stop_loginmgr {
     if pgrep -f '/usr/bin/python /usr/bin/supervisord'; then
         printf "Info: supvisord is running! Kill it first\n"
         pkill -f '/usr/bin/python /usr/bin/supervisord'
-        sleep 2
+        sleep 5
         if pgrep -f '/usr/bin/python /usr/bin/supervisord'; then
             printf "Warning: Supervisord is still running!! Try to kill daemon
             directly\n"

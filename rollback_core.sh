@@ -83,7 +83,7 @@ else
             "$serv is not running!! " | tee -a $rollback_logs
     fi
 fi
-sleep 2
+sleep 5
 printf "%s %s \n" "$(date +%Y-%m-%d\ %T)" \
     "Info: Replace $serv binary!" | tee -a $rollback_logs
 install -v $rollback_bin $bin_dir/$serv | tee -a $rollback_logs

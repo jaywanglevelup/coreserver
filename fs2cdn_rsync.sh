@@ -137,7 +137,7 @@ function do_rsync {
                 | tee -a $rsync_logs
             printf "%s %s %s \n" "$(date +%Y-%m-%d\ %T)" "Info: Local MD5SUM: " \
             $(md5sum $ROOT_DIR/Games/$game/$game_file) | tee -a $rsync_logs
-            sleep 20
+            sleep 50
             printf "%s %s %s\n" "$(date +%Y-%m-%d\ %T)" "Info: Remote MD5SUM: " \
             $(ssh -i $cdn_key_file sshacs@perfectworld.upload.akamai.com \
                 md5sum 68820/cc/$game/$game_file) | tee -a $rsync_logs

@@ -1,8 +1,26 @@
 #!/bin/bash
-daemon_cmd='/usr/local/bin/corecenter'
-function stop_corecenter {
+daemon_cmd='/session'
+function run_sessions {
+cd /usr/local/bin/session1/
+/usr/local/bin/session1/session /usr/local/bin/sm.xml >/dev/null 2>1&
+cd /usr/local/bin/session2/
+/usr/local/bin/session2/session /usr/local/bin/sm.xml >/dev/null 2>1&
+cd /usr/local/bin/session3/
+/usr/local/bin/session3/session /usr/local/bin/sm.xml >/dev/null 2>1&
+cd /usr/local/bin/session4/
+/usr/local/bin/session4/session /usr/local/bin/sm.xml >/dev/null 2>1&
+cd /usr/local/bin/session5/
+/usr/local/bin/session5/session /usr/local/bin/sm.xml >/dev/null 2>1&
+cd /usr/local/bin/session6/
+/usr/local/bin/session6/session /usr/local/bin/sm.xml >/dev/null 2>1&
+cd /usr/local/bin/session7/
+/usr/local/bin/session7/session /usr/local/bin/sm.xml >/dev/null 2>1&
+cd /usr/local/bin/session8/
+/usr/local/bin/session8/session /usr/local/bin/sm.xml >/dev/null 2>1&
+}
+function stop_session {
     if ! pgrep -f "$daemon_cmd"; then
-        printf "Error: corecenter is not running!!\n"
+        printf "Error: session is not running!!\n"
         return 1
     fi
     
@@ -18,7 +36,7 @@ function stop_corecenter {
         pkill -f "$daemon_cmd"
         sleep 5
         if pgrep -f "$daemon_cmd"; then
-            printf "Error: failed to kill corecenter\n"
+            printf "Error: failed to kill session\n"
             return 2
         else
             return 0
@@ -29,7 +47,7 @@ function stop_corecenter {
         pkill -f "$daemon_cmd"
         sleep 5
         if pgrep -f "$daemon_cmd"; then
-            printf "Error: failed to kill corecenter\n"
+            printf "Error: failed to kill session\n"
             return 2
         else
             return 0
@@ -37,23 +55,22 @@ function stop_corecenter {
     fi
 }
 
-function start_corecenter {
+function start_session {
     if pgrep -f "$daemon_cmd"; then
-        printf "Error: corecenter is running!!try restart it!\n"
+        printf "Error: session is running!!try restart it!\n"
         return 1
     fi
 
     if pgrep -f '/usr/bin/python /usr/bin/supervisord'; then
         printf "warning supvisord is running!but daemon is dead! Start it
         manually\n"
-        cd /usr/local/var/log/
-        $daemon_cmd &
+        run_sessions
         sleep 5
         if pgrep -f "$daemon_cmd"; then
             printf "new pid: $(pgrep -f "$daemon_cmd")\n"
             return 0
         else
-            printf "Error: corecenter failed to start\n"
+            printf "Error: session failed to start\n"
             return 2
         fi
     else
@@ -65,13 +82,12 @@ function start_corecenter {
             return 0
         else
             printf "supvisord bring back daemon failed, started it manually\n"
-            cd /usr/local/var/log/
-            $daemon_cmd &
+            run_sessions
             if pgrep -f "$daemon_cmd"; then
                 printf "new pid: $(pgrep -f "$daemon_cmd")\n"
                 return 0
             else
-                printf "Error: corecenter failed to start\n"
+                printf "Error: session failed to start\n"
                 return 2
             fi
         fi
@@ -82,11 +98,11 @@ lockfile=/var/run/$0.pid
 if [ ! -e $lockfile ]; then
     trap "rm -f $lockfile; exit 3" INT TERM EXIT
     touch $lockfile
-    if ! stop_corecenter ; then
+    if ! stop_session ; then
         printf "Error: stop process failed!! exit!"
         exit 1
     fi
-    if ! start_corecenter ; then
+    if ! start_session ; then
         printf "Error: start process failed!! exit!"
         exit 1
     fi

@@ -1,8 +1,8 @@
 #!/bin/bash
-daemon_cmd='/usr/local/bin/corecenter'
-function stop_corecenter {
+daemon_cmd='/usr/local/bin/loginmgr'
+function stop_loginmgr {
     if ! pgrep -f "$daemon_cmd"; then
-        printf "Error: corecenter is not running!!\n"
+        printf "Error: loginmgr is not running!!\n"
         return 1
     fi
     
@@ -18,7 +18,7 @@ function stop_corecenter {
         pkill -f "$daemon_cmd"
         sleep 5
         if pgrep -f "$daemon_cmd"; then
-            printf "Error: failed to kill corecenter\n"
+            printf "Error: failed to kill loginmgr\n"
             return 2
         else
             return 0
@@ -29,7 +29,7 @@ function stop_corecenter {
         pkill -f "$daemon_cmd"
         sleep 5
         if pgrep -f "$daemon_cmd"; then
-            printf "Error: failed to kill corecenter\n"
+            printf "Error: failed to kill loginmgr\n"
             return 2
         else
             return 0
@@ -37,9 +37,9 @@ function stop_corecenter {
     fi
 }
 
-function start_corecenter {
+function start_loginmgr {
     if pgrep -f "$daemon_cmd"; then
-        printf "Error: corecenter is running!!try restart it!\n"
+        printf "Error: loginmgr is running!!try restart it!\n"
         return 1
     fi
 
@@ -53,7 +53,7 @@ function start_corecenter {
             printf "new pid: $(pgrep -f "$daemon_cmd")\n"
             return 0
         else
-            printf "Error: corecenter failed to start\n"
+            printf "Error: loginmgr failed to start\n"
             return 2
         fi
     else
@@ -71,7 +71,7 @@ function start_corecenter {
                 printf "new pid: $(pgrep -f "$daemon_cmd")\n"
                 return 0
             else
-                printf "Error: corecenter failed to start\n"
+                printf "Error: loginmgr failed to start\n"
                 return 2
             fi
         fi
@@ -80,13 +80,13 @@ function start_corecenter {
 
 lockfile=/var/run/$0.pid
 if [ ! -e $lockfile ]; then
-    trap "rm -f $lockfile; exit 3" INT TERM EXIT
+    trap "rm -f $lockfile; exit" INT TERM EXIT
     touch $lockfile
-    if ! stop_corecenter ; then
+    if ! stop_loginmgr ; then
         printf "Error: stop process failed!! exit!"
         exit 1
     fi
-    if ! start_corecenter ; then
+    if ! start_loginmgr ; then
         printf "Error: start process failed!! exit!"
         exit 1
     fi
